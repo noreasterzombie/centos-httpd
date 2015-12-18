@@ -1,7 +1,7 @@
-FROM debian:jessie
+FROM montge/centos-java8
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-#RUN groupadd -r www-data && useradd -r --create-home -g www-data www-data
+RUN groupadd -r www-data && useradd -r --create-home -g www-data www-data
 
 ENV HTTPD_PREFIX /usr/local/apache2
 ENV PATH $PATH:$HTTPD_PREFIX/bin
@@ -11,15 +11,12 @@ WORKDIR $HTTPD_PREFIX
 
 # install httpd runtime dependencies
 # https://httpd.apache.org/docs/2.4/install.html#requirements
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends \
-		libapr1 \
-		libaprutil1 \
-		libapr1-dev \
-		libaprutil1-dev \
-		libpcre++0 \
-		libssl1.0.0 \
-	&& rm -r /var/lib/apt/lists/*
+#RUN yum update \
+#	&& yum install -y \
+#	       apr-devel \
+#	       openssl-devel \
+#	       make \
+#	&& yum clean all
 
 # see https://httpd.apache.org/download.cgi#verify
 RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys A93D62ECC3C8EA12DB220EC934EA76E6791485A8
@@ -32,14 +29,16 @@ RUN buildDeps=' \
 		curl \
 		bzip2 \
 		gcc \
-		libpcre++-dev \
-		libssl-dev \
+		pcre-devel \
 		make \
+		openssl-devel \
+		apr-devel \
+		apr-util-devel \
 	' \
 	set -x \
-	&& apt-get update \
-	&& apt-get install -y --no-install-recommends $buildDeps \
-	&& rm -r /var/lib/apt/lists/* \
+	&& yum update \
+	&& yum install -y $buildDeps \
+	&& yum clean all \
 	&& curl -SL "$HTTPD_BZ2_URL" -o httpd.tar.bz2 \
 	&& curl -SL "$HTTPD_BZ2_URL.asc" -o httpd.tar.bz2.asc \
 	&& gpg --verify httpd.tar.bz2.asc \
@@ -56,7 +55,7 @@ RUN buildDeps=' \
 		s!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g; \
 		s!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g; \
 		' /usr/local/apache2/conf/httpd.conf \
-	&& apt-get purge -y --auto-remove $buildDeps
+	&& yum remove -y *-devel
 
 COPY httpd-foreground /usr/local/bin/
 
