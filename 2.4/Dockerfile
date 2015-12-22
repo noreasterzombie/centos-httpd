@@ -19,7 +19,7 @@ WORKDIR $HTTPD_PREFIX
 #	&& yum clean all
 
 # see https://httpd.apache.org/download.cgi#verify
-RUN gpg --keyserver ha.pool.sks-keyservers.net --recv-keys A93D62ECC3C8EA12DB220EC934EA76E6791485A8
+RUN gpg --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-keys A93D62ECC3C8EA12DB220EC934EA76E6791485A8
 
 ENV HTTPD_VERSION 2.4.18
 ENV HTTPD_BZ2_URL https://www.apache.org/dist/httpd/httpd-$HTTPD_VERSION.tar.bz2
